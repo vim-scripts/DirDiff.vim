@@ -1,8 +1,8 @@
 " -*- vim -*-
 " FILE: "C:\Documents and Settings\William Lee\vimfiles\plugin\DirDiff.vim" {{{
-" LAST MODIFICATION: "Wed, 29 Oct 2003 08:20:29 Central Standard Time"
+" LAST MODIFICATION: "Fri, 31 Oct 2003 07:51:17 Central Standard Time"
 " HEADER MAINTAINED BY: N/A
-" VERSION: 1.0.1
+" VERSION: 1.0.2
 " (C) 2001-2003 by William Lee, <wl1012@yahoo.com>
 " }}}
 
@@ -87,6 +87,7 @@
 "   Salman Halim, Yosuke Kimura, and others for their suggestions
 "
 " HISTORY:
+"  1.0.2  - Fixed a small typo bug in the quit function.
 "  1.0.1  - Ensure the path separator is correct when running in W2K
 "  1.0  - Fixed a bug that flags errors if the user use the nowrapscan option.
 "         Implements a quit function that exit the diff windows.
@@ -128,7 +129,7 @@ command! -nargs=0 DirDiffOpen call <SID>DirDiffOpen ()
 command! -nargs=0 DirDiffNext call <SID>DirDiffNext ()
 command! -nargs=0 DirDiffPrev call <SID>DirDiffPrev ()
 command! -nargs=0 DirDiffUpdate call <SID>DirDiffUpdate ()
-command! -nargs=0 DirDiffUpdate call <SID>DirDiffQuit ()
+command! -nargs=0 DirDiffQuit call <SID>DirDiffQuit ()
 
 if !hasmapto('<Plug>DirDiffGet')
   map <unique> <Leader>dg <Plug>DirDiffGet
