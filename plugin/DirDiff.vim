@@ -1,9 +1,9 @@
 " -*- vim -*-
-" FILE: "H:\vim\vimfiles\plugin\DirDiff.vim" {{{
-" LAST MODIFICATION: "Wed, 07 Nov 2001 08:11:46 Pacific Standard Time (wlee)"
+" FILE: "C:\Documents and Settings\William Lee\vimfiles\plugin\DirDiff.vim" {{{
+" LAST MODIFICATION: "Wed, 29 Oct 2003 08:20:29 Central Standard Time"
 " HEADER MAINTAINED BY: N/A
-" VERSION: 1.0
-" (C) 2001 by William Lee, <wlee@sendmail.com>
+" VERSION: 1.0.1
+" (C) 2001-2003 by William Lee, <wl1012@yahoo.com>
 " }}}
 
 
@@ -77,9 +77,9 @@
 "
 "   Please mail any comment/suggestion/patch to 
 "
-"   William Lee <wlee@sendmail.com>
+"   William Lee <wl1012@yahoo.com>
 "
-"   (c) 2001. All Rights Reserved
+"   (c) 2001-2003. All Rights Reserved
 "
 " THANKS:
 "
@@ -87,6 +87,7 @@
 "   Salman Halim, Yosuke Kimura, and others for their suggestions
 "
 " HISTORY:
+"  1.0.1  - Ensure the path separator is correct when running in W2K
 "  1.0  - Fixed a bug that flags errors if the user use the nowrapscan option.
 "         Implements a quit function that exit the diff windows.
 "  0.94 - Fixed a bug where the diff will give incorrect A and B file due to
@@ -685,8 +686,10 @@ function! <SID>ParseOnlyFile(line)
     return file
 endfunction
 
-function! <SID>Copy(fileFrom, fileTo)
-    echo "Copy from " . a:fileFrom . " to " . a:fileTo
+function! <SID>Copy(fileFromOrig, fileToOrig)
+    let fileFrom = substitute(a:fileFromOrig, '/', s:sep, 'g')
+    let fileTo = substitute(a:fileToOrig, '/', s:sep, 'g')
+    echo "Copy from " . fileFrom . " to " . fileTo
     if (s:DirDiffCopyCmd == "")
         echo "Copy not supported on this platform"
         return 1
@@ -698,7 +701,7 @@ function! <SID>Copy(fileFrom, fileTo)
     if (g:DirDiffInteractive)
         let copycmd = copycmd . " " . s:DirDiffCopyInteractiveFlag
     endif
-    let copycmd = copycmd . " \"".a:fileFrom."\" \"".a:fileTo."\""
+    let copycmd = copycmd . " \"".fileFrom."\" \"".fileTo."\""
 
     " Constructs the copy directory command
     let copydircmd = "!".s:DirDiffCopyDirCmd." ".s:DirDiffCopyDirFlags
@@ -706,16 +709,16 @@ function! <SID>Copy(fileFrom, fileTo)
     if (g:DirDiffInteractive)
         let copydircmd = copydircmd . " " . s:DirDiffCopyInteractiveFlag
     endif
-    let copydircmd = copydircmd . " \"".a:fileFrom."\" \"".a:fileTo."\""
+    let copydircmd = copydircmd . " \"".fileFrom."\" \"".fileTo."\""
 
     let error = 0
-    if (isdirectory(a:fileFrom))
+    if (isdirectory(fileFrom))
         let error = <SID>DirDiffExec(copydircmd, g:DirDiffInteractive)
     else
         let error = <SID>DirDiffExec(copycmd, g:DirDiffInteractive)
     endif
     if (error != 0)
-        echo "Can't copy from " . a:fileFrom . " to " . a:fileTo
+        echo "Can't copy from " . fileFrom . " to " . fileTo
         return 1
     endif
     return 0
@@ -739,8 +742,9 @@ endfunction
 
 " Delete the file or directory.  Returns 0 if nothing goes wrong, error code
 " otherwise.
-function! <SID>Delete(fileFrom)
-    echo "Deleting from " . a:fileFrom
+function! <SID>Delete(fileFromOrig)
+    let fileFrom = substitute(a:fileFromOrig, '/', s:sep, 'g')
+    echo "Deleting from " . fileFrom
     if (s:DirDiffDeleteCmd == "")
         echo "Delete not supported on this platform"
         return 1
@@ -748,7 +752,7 @@ function! <SID>Delete(fileFrom)
 
     let delcmd = ""
 
-    if (isdirectory(a:fileFrom))
+    if (isdirectory(fileFrom))
         let delcmd = "!".s:DirDiffDeleteDirCmd." ".s:DirDiffDeleteDirFlags
         if (g:DirDiffInteractive)
             " If running on Unix, and we're running in interactive mode, we
@@ -770,10 +774,10 @@ function! <SID>Delete(fileFrom)
         endif
     endif
 
-    let delcmd = delcmd ." \"".a:fileFrom."\""
+    let delcmd = delcmd ." \"".fileFrom."\""
     let error = <SID>DirDiffExec(delcmd, g:DirDiffInteractive)
     if (error != 0)
-        echo "Can't delete " . a:fileFrom
+        echo "Can't delete " . fileFrom
     endif
     return error
 endfunction
