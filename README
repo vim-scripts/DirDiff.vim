@@ -1,0 +1,3 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=102
+
+This is a utility that performs a recursive diff on two directories and generate a diff "window".  Based on that window you can perform various diff operations such as opening two files in Vim's diff mode, copy the file or directory recursively to the other, or remove the directory tree from the source directory.
