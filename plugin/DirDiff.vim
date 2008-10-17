@@ -1,9 +1,9 @@
 " -*- vim -*-
-" FILE: "C:\Documents and Settings\William Lee\vimfiles\plugin\DirDiff.vim" {{{
-" LAST MODIFICATION: "Wed, 22 Feb 2006 22:31:59 Central Standard Time"
+" FILE: "/home/wlee/.vim/plugin/DirDiff.vim" {{{
+" LAST MODIFICATION: "Fri, 17 Oct 2008 08:59:45 -0500 (wlee)"
 " HEADER MAINTAINED BY: N/A
-" VERSION: 1.1.0
-" (C) 2001-2006 by William Lee, <wl1012@yahoo.com>
+" VERSION: 1.0.2
+" (C) 2001-2003 by William Lee, <wl1012@yahoo.com>
 " }}}
 
 
@@ -68,43 +68,6 @@
 "   \dj - Diff next: (think j for down) 
 "   \dk - Diff previous: (think k for up)
 "
-"   You can set the following DirDiff variables.  You can add the following
-"   "let" lines in your .vimrc file.
-"
-"   Sets default exclude pattern:
-"       let g:DirDiffExcludes = "CVS,*.class,*.exe,.*.swp"
-"
-"   Sets default ignore pattern:
-"       let g:DirDiffIgnore = "Id:,Revision:,Date:"
-"
-"   If DirDiffSort is set to 1, sorts the diff lines.
-"       let g:DirDiffSort = 1
-"
-"   Sets the diff window (bottom window) height (rows)
-"       let g:DirDiffWindowSize = 14
-"
-"   Ignore case during diff
-"       let g:DirDiffIgnoreCase = 0
-"
-"   Dynamically figure out the diff text.  If you are using and i18n version
-"   of diff, this will try to get the specific diff text during runtime.  It's
-"   turned off by default.  If you are always targetting a specific version of
-"   diff, you can turn this off and set the DirDiffText* variables
-"   accordingly.
-"       let g:DirDiffDynamicDiffText = 0
-"
-"   String used for the English equivalent "Files "
-"       let g:DirDiffTextFiles = "Files "
-
-"   String used for the English equivalent " and "
-"       let g:DirDiffTextAnd = " and "
-"
-"   String used for the English equivalent " differ")
-"       let g:DirDiffTextDiffer = " differ"
-"
-"   String used for the English equivalent "Only in ")
-"       let g:DirDiffTextOnlyIn = "Only in "
-"
 " NOTES:
 "   This script can copy and remove your files.  This can be powerful (or too
 "   powerful) at times.  Please do not blame me if you use this and
@@ -113,45 +76,17 @@
 " CREDITS:
 "
 "   Please mail any comment/suggestion/patch to 
+"
 "   William Lee <wl1012@yahoo.com>
 "
-" LICENSE:
-"   Copyright (c) 2001-2006 William Lee
-"   All rights reserved.
-"
-"   Redistribution and use in source and binary forms, with or without
-"   modification, are permitted provided that the following conditions are
-"   met:
-"
-"     * Redistributions of source code must retain the above copyright
-"       notice, this list of conditions and the following disclaimer.
-"     * Redistributions in binary form must reproduce the above copyright
-"       notice, this list of conditions and the following disclaimer in the
-"       documentation and/or other materials provided with the distribution.
-"     * Neither the name William Lee nor the names of its contributors may be
-"       used to endorse or promote products derived from this software without
-"       specific prior written permission.
-"
-"   THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-"   INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-"   AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-"   WILLIAM LEE AND CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-"   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-"   NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-"   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-"   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-"   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-"   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"   (c) 2001-2003. All Rights Reserved
 "
 " THANKS:
 "
-"   Florian Delizy for the i18n diff patch
 "   Robert Webb for his sorting function
 "   Salman Halim, Yosuke Kimura, and others for their suggestions
 "
 " HISTORY:
-"  1.1.0  - Added support for i18n (tested on a French version for now only).
-"           Can dynamically figure out the diff strings output by diff.
 "  1.0.2  - Fixed a small typo bug in the quit function.
 "  1.0.1  - Ensure the path separator is correct when running in W2K
 "  1.0  - Fixed a bug that flags errors if the user use the nowrapscan option.
@@ -252,31 +187,6 @@ endif
 if !exists("g:DirDiffAddArgs")
     let g:DirDiffAddArgs = ""
 endif
-" Support for i18n (dynamically figure out the diff text)
-" Defaults to off
-if !exists("g:DirDiffDynamicDiffText")
-    let g:DirDiffDynamicDiffText = 0
-endif
-
-" String used for the English equivalent "Files "
-if !exists("g:DirDiffTextFiles")
-    let g:DirDiffTextFiles = "Files "
-endif
-
-" String used for the English equivalent " and "
-if !exists("g:DirDiffTextAnd")
-    let g:DirDiffTextAnd = " and "
-endif
-
-" String used for the English equivalent " differ")
-if !exists("g:DirDiffTextDiffer")
-    let g:DirDiffTextDiffer = " differ"
-endif
-
-" String used for the English equivalent "Only in ")
-if !exists("g:DirDiffTextOnlyIn")
-    let g:DirDiffTextOnlyIn = "Only in "
-endif
 
 " Set some script specific variables:
 "
@@ -300,9 +210,6 @@ if has("unix")
     let s:DirDiffDeleteDirFlags = "-rf"
 
     let s:sep = "/"
-
-    let s:DirDiffMakeDirCmd  = "!mkdir "
-
 elseif has("win32")
     let s:DirDiffCopyCmd = "copy"
     let s:DirDiffCopyFlags = ""
@@ -323,8 +230,6 @@ elseif has("win32")
     let s:DirDiffDeleteDirQuietFlag = "/q"
 
     let s:sep = "\\"
-
-    let s:DirDiffMakeDirCmd  = "!mkdir "
 else
     " Platforms not supported
     let s:DirDiffCopyCmd = ""
@@ -339,9 +244,6 @@ function! <SID>DirDiff(srcA, srcB)
     " Setup
     let DirDiffAbsSrcA = fnamemodify(expand(a:srcA, ":p"), ":p")
     let DirDiffAbsSrcB = fnamemodify(expand(a:srcB, ":p"), ":p")
-
-    " Check for an internationalized version of diff ?
-    call <SID>GetDiffStrings()
 
     " Remove the trailing \ or /
     let DirDiffAbsSrcA = substitute(DirDiffAbsSrcA, '\\$\|/$', '', '')
@@ -450,8 +352,8 @@ function! <SID>SetupSyntax()
     syn match DirDiffSrcB               "\[B\]"
     syn match DirDiffUsage              "^Usage.*"
     syn match DirDiffOptions            "^Options.*"
-    exec 'syn match DirDiffFiles              "' . s:DirDiffDifferLine .'"'
-    exec 'syn match DirDiffOnly               "' . s:DirDiffDiffOnlyLine . '"'
+    syn match DirDiffFiles              "Files"
+    syn match DirDiffOnly               "Only in"
     syn match DirDiffSelected           "^==>.*" contains=DirDiffSrcA,DirDiffSrcB
 
     hi def link DirDiffSrcA               Directory
@@ -483,7 +385,7 @@ endfun
 " Returns an escaped version of the path for regex uses
 function! <SID>EscapeDirForRegex(path)
     " This list is probably not complete, modify later
-    return escape(a:path, "/\\[]$^~")
+    return escape(a:path, "/\\[]$^")
 endfunction
 
 " Close the opened diff comparison windows if they exist
@@ -532,7 +434,7 @@ function! <SID>DirDiffOpen()
         endif
         split
         wincmd k
-        silent exec "edit ".fileToOpen
+        silent exec "edit ".fnameescape(fileToOpen)
         " Fool the window saying that this is diff
         diffthis
         wincmd j
@@ -543,8 +445,8 @@ function! <SID>DirDiffOpen()
         "Open the diff windows
         split
         wincmd k
-        silent exec "edit ".fileB
-        silent exec "vert diffsplit ".fileA
+        silent exec "edit ".fnameescape(fileB)
+        silent exec "vert diffsplit ".fnameescape(fileA)
         " Go back to the diff window
         wincmd j
         " Resize the window
@@ -553,7 +455,7 @@ function! <SID>DirDiffOpen()
         " Center the line
         exe ("normal z.")
     else
-        echo "There is no diff at the current line!"
+        echo "There is no diff here!"
     endif
 endfunction
 
@@ -758,7 +660,7 @@ function! <SID>GetFileNameFromLine(AB, line)
     if <SID>IsOnly(a:line)
         let fileToProcess = <SID>ParseOnlyFile(a:line)
     elseif <SID>IsDiffer(a:line)
-        let regex = '^.*' . s:DirDiffDifferLine . '\[A\]\(.*\)' . s:DirDiffDifferAndLine . '\[B\]\(.*\)' . s:DirDiffDifferEndLine . '.*$'
+        let regex = '^.*Files\s\[A\]\(.*\)\sand\s\[B\]\(.*\)\sdiffer.*$'
         let fileToProcess = substitute(a:line, regex, '\1', '')
     else
     endif
@@ -775,11 +677,11 @@ endfunction
 
 "Returns the source (A or B) of the "Only" line
 function! <SID>ParseOnlySrc(line)
-    return substitute(a:line, '^.*' . s:DirDiffDiffOnlyLine . '\[\(.\)\].*:.*', '\1', '')
+    return substitute(a:line, '^.*Only in \[\(.\)\].*:.*', '\1', '')
 endfunction
 
 function! <SID>ParseOnlyFile(line)
-    let regex = '^.*' . s:DirDiffDiffOnlyLine . '\[.\]\(.*\): \(.*\)'
+    let regex = '^.*Only in \[.\]\(.*\): \(.*\)'
     let root = substitute(a:line, regex , '\1', '')
     let file = root . s:sep . substitute(a:line, regex , '\2', '')
     return file
@@ -909,13 +811,13 @@ function! <SID>AreDiffWinsOpened()
 endfunction
 
 " The given line begins with the "Only in"
-function! <SID>IsOnly(line)	
-    return (match(a:line, "^ *" . s:DirDiffDiffOnlyLine . "\\|^==> " . s:DirDiffDiffOnlyLine ) == 0)
+function! <SID>IsOnly(line)
+    return (match(a:line, "^    Only in\\|^==> Only in") == 0)
 endfunction
 
 " The given line begins with the "Files"
 function! <SID>IsDiffer(line)
-    return (match(a:line, "^ *" . s:DirDiffDifferLine . "\\|^==> " . s:DirDiffDifferLine  ) == 0)
+    return (match(a:line, "^    Files\\|^==> Files") == 0)
 endfunction
 
 " Let you modify the Exclude patthern
@@ -994,74 +896,3 @@ endfunc
 func! <SID>Sort(cmp) range
   call <SID>SortR(a:firstline, a:lastline, a:cmp)
 endfunc
-
-" Added to deal with internationalized version of diff, which returns a
-" different string than "Files ... differ" or "Only in ... "
-
-function! <SID>GetDiffStrings()
-    " Check if we have the dynamic text string turned on.  If not, just return
-    " what's set in the global variables
-
-    if (g:DirDiffDynamicDiffText == 0)
-        let s:DirDiffDiffOnlyLine = g:DirDiffTextOnlyIn
-        let s:DirDiffDifferLine = g:DirDiffTextFiles
-        let s:DirDiffDifferAndLine = g:DirDiffTextAnd
-        let s:DirDiffDifferEndLine = g:DirDiffTextDiffer
-        return
-    endif
-
-	let tmp1 = tempname()
-	let tmp2 = tempname()
-	let tmpdiff = tempname()
-
-    " We need to pad the backslashes in order to make it match
-    let tmp1rx = <SID>EscapeDirForRegex(tmp1)
-    let tmp2rx = <SID>EscapeDirForRegex(tmp2)
-    let tmpdiffrx = <SID>EscapeDirForRegex(tmpdiff)
-
-	silent exe s:DirDiffMakeDirCmd . "\"" . tmp1 . "\""
-	silent exe s:DirDiffMakeDirCmd . "\"" . tmp2 . "\""
-	silent exe "!echo test > \"" . tmp1 . s:sep . "test" . "\""
-	silent exe "!diff -r --brief \"" . tmp1 . "\" \"" . tmp2 . "\" > \"" . tmpdiff . "\""
-
-	" Now get the result of that diff cmd
-	silent exe "split ". tmpdiff
-    "echo "First line: " . getline(1)
-    "echo "tmp1: " . tmp1
-    "echo "tmp1rx: " . tmp1rx
-	let s:DirDiffDiffOnlyLine = substitute( getline(1), tmp1rx . ".*$", "", '') 
-    "echo "DirDiff Only: " . s:DirDiffDiffOnlyLine
-	
-	q
-
-	" Now let's get the Differ string
-    "echo "Getting the diff in GetDiffStrings"
-	
-	silent exe "!echo testdifferent > \"" . tmp2 . s:sep . "test" . "\""
-	silent exe "!diff -r --brief \"" . tmp1 . "\" \"" . tmp2 . "\" > \"" . tmpdiff . "\""
-	
-	silent exe "split ". tmpdiff
-	let s:DirDiffDifferLine = substitute( getline(1), tmp1rx . ".*$", "", '') 
-    " Note that the diff on cygwin may output '/' instead of '\' for the
-    " separator, so we need to accomodate for both cases
-    let andrx = "^.*" . tmp1rx . "[\\\/]test\\(.*\\)" . tmp2rx . "[\\\/]test.*$"
-    let endrx = "^.*" . tmp1rx . "[\\\/]test.*" . tmp2rx . "[\\\/]test\\(.*$\\)"
-    "echo "andrx : " . andrx
-    "echo "endrx : " . endrx
-	let s:DirDiffDifferAndLine = substitute( getline(1), andrx , "\\1", '') 
-    let s:DirDiffDifferEndLine = substitute( getline(1), endrx, "\\1", '') 
-
-	"echo "s:DirDiffDifferLine = " . s:DirDiffDifferLine
-	"echo "s:DirDiffDifferAndLine = " . s:DirDiffDifferAndLine
-	"echo "s:DirDiffDifferEndLine = " . s:DirDiffDifferEndLine
-
-	q
-
-	" Delete tmp files
-    "echo "Deleting tmp files."
-
-	call <SID>Delete(tmp1)
-	call <SID>Delete(tmp2)
-	call <SID>Delete(tmpdiff)
-
-endfunction
