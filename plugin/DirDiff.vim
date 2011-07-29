@@ -1,9 +1,9 @@
 " -*- vim -*-
 " FILE: "/home/wlee/.vim/plugin/DirDiff.vim" {{{
-" LAST MODIFICATION: "Mon, 20 Oct 2008 09:04:59 -0500 (wlee)"
+" LAST MODIFICATION: "Fri, 29 Jul 2011 08:30:07 -0500 (wlee)"
 " HEADER MAINTAINED BY: N/A
-" VERSION: 1.1.3
-" (C) 2001-2010 by William Lee, <wl1012@yahoo.com>
+" VERSION: 1.1.4
+" (C) 2001-2011 by William Lee, <wl1012@yahoo.com>
 " }}}
 
 
@@ -116,7 +116,7 @@
 "   William Lee <wl1012@yahoo.com>
 "
 " LICENSE:
-"   Copyright (c) 2001-2006 William Lee
+"   Copyright (c) 2001-2011 William Lee
 "   All rights reserved.
 "
 "   Redistribution and use in source and binary forms, with or without
@@ -151,6 +151,7 @@
 "   Salman Halim, Yosuke Kimura, and others for their suggestions
 "
 " HISTORY:
+"  1.1.4  - Fixed split windows problems caused by some .vimrc settings.
 "  1.1.3  - Applied the patch to 1.1.2 by Wu WeiWei in order to make diff
 "           that's localized in Chinese work.
 "  1.1.2  - Applied the patch to 1.1.0 instead of 1.0.2. Please do not use
@@ -386,7 +387,7 @@ function! <SID>DirDiff(srcA, srcB)
     echo "Diffing directories, it may take a while..."
     let error = <SID>DirDiffExec(cmd, 0)
     if (error == 0)
-        echo "There is no diff here."
+        redraw | echom "diff found no differences - directories match."
         return
     endif
     silent exe "edit ".DiffBuffer
@@ -513,6 +514,17 @@ function! <SID>CloseDiffWindows()
     endif
 endfunction
 
+function! <SID>EscapeFileName(path)
+	if (v:version >= 702)
+		return fnameescape(a:path)
+	else
+		" This is not a complete list of escaped character, so it's
+		" not as sophisicated as the fnameescape, but this should
+		" cover most of the cases and should work for Vim version <
+		" 7.2
+		return escape(a:path, " \t\n*?[{`$\\%#'\"|!<")
+	endif
+endfunction
 
 function! <SID>DirDiffOpen()
     " First dehighlight the last marked
@@ -526,7 +538,14 @@ function! <SID>DirDiffOpen()
     let dirA = <SID>GetBaseDir("A")
     let dirB = <SID>GetBaseDir("B")
 
+    " Save the number of this window, to which we wish to return
+    " This is required in case there are other windows open
+    let thisWindow = winnr()
+
     call <SID>CloseDiffWindows()
+
+    " Ensure we're in the right window
+    exec thisWindow.'wincmd w'
 
     let line = getline(".")
     " Parse the line and see whether it's a "Only in" or "Files Differ"
@@ -543,7 +562,7 @@ function! <SID>DirDiffOpen()
         endif
         split
         wincmd k
-        silent exec "edit ".fnameescape(fileToOpen)
+        silent exec "edit ". <SID>EscapeFileName(fileToOpen)
         " Fool the window saying that this is diff
         diffthis
         wincmd j
@@ -554,8 +573,15 @@ function! <SID>DirDiffOpen()
         "Open the diff windows
         split
         wincmd k
-        silent exec "edit ".fnameescape(fileB)
-        silent exec "vert diffsplit ".fnameescape(fileA)
+        silent exec "edit ".<SID>EscapeFileName(fileB)
+
+        " To ensure that A is on the left and B on the right, splitright must be off
+        " let saved_splitright = &splitright
+        " set nosplitright
+        " silent exec "vert diffsplit ".<SID>EscapeFileName(fileA)
+        " let &splitright = saved_splitright
+        silent exec "leftabove vert diffsplit ".<SID>EscapeFileName(fileA)
+
         " Go back to the diff window
         wincmd j
         " Resize the window
