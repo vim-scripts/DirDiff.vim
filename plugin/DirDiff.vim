@@ -2,7 +2,7 @@
 " FILE: "/home/wlee/.vim/plugin/DirDiff.vim" {{{
 " LAST MODIFICATION: "Fri, 29 Jul 2011 08:30:07 -0500 (wlee)"
 " HEADER MAINTAINED BY: N/A
-" VERSION: 1.1.4
+" VERSION: 1.1.4a
 " (C) 2001-2011 by William Lee, <wl1012@yahoo.com>
 " }}}
 
@@ -151,6 +151,7 @@
 "   Salman Halim, Yosuke Kimura, and others for their suggestions
 "
 " HISTORY:
+"  1.1.4a - Added 'DirDiffHexmode' and 'DirDiffWrapmode' 
 "  1.1.4  - Fixed split windows problems caused by some .vimrc settings.
 "  1.1.3  - Applied the patch to 1.1.2 by Wu WeiWei in order to make diff
 "           that's localized in Chinese work.
@@ -421,7 +422,7 @@ function! <SID>DirDiff(srcA, srcB)
     call append(0, "[A]=". DirDiffAbsSrcA)
     call append(1, "[B]=". DirDiffAbsSrcB)
     call append(2, "Usage:   <Enter>/'o'=open,'s'=sync,'\\dj'=next,'\\dk'=prev, 'q'=quit")
-    call append(3, "Options: 'u'=update,'x'=set excludes,'i'=set ignore,'a'=set args" )
+    call append(3, "Options: 'u'=update,'x'=set excludes,'i'=set ignore,'a'=set args, 'b'=hex/binary mode, 'w'=wrap mode" )
     call append(4, "Diff Args:" . cmdarg)
     call append(5, "")
     " go to the beginning of the file
@@ -443,6 +444,8 @@ function! <SID>DirDiff(srcA, srcB)
     nnoremap <buffer> x :call <SID>ChangeExcludes()<CR>
     nnoremap <buffer> a :call <SID>ChangeArguments()<CR>
     nnoremap <buffer> i :call <SID>ChangeIgnore()<CR>
+    nnoremap <buffer> b :call <SID>DirDiffHexmode()<CR>
+    nnoremap <buffer> w :call <SID>DirDiffWrapmode()<CR>
     nnoremap <buffer> q :call <SID>DirDiffQuit()<CR>
 
     nnoremap <buffer> o    :call <SID>DirDiffOpen()<CR>
@@ -512,6 +515,62 @@ function! <SID>CloseDiffWindows()
             bd!
         endif
     endif
+endfunction
+
+" Toggle hexmode from http://vim.wikia.com/wiki/Hex
+function <SID>ToggleHex()
+    " hex mode should be considered a read-only operation
+    " save values for modified and read-only for restoration later,
+    " and clear the read-only flag for now
+    let l:modified=&mod
+    let l:oldreadonly=&readonly
+    let &readonly=0
+    let l:oldmodifiable=&modifiable
+    let &modifiable=1
+    if !exists("b:editHex") || !b:editHex
+        " save old options
+        let b:oldft=&ft
+        let b:oldbin=&bin
+        " set new options
+        setlocal binary " make sure it overrides any textwidth, etc.
+        let &ft="xxd"
+        " set status
+        let b:editHex=1
+        " switch to hex editor
+        silent %!xxd
+    else
+        " restore old options
+        let &ft=b:oldft
+        if !b:oldbin
+            setlocal nobinary
+        endif
+        " set status
+        let b:editHex=0
+        " return to normal editing
+        silent %!xxd -r
+    endif
+    " restore values for modified and read only state
+    let &mod=l:modified
+    let &readonly=l:oldreadonly
+    let &modifiable=l:oldmodifiable
+endfunction
+
+function! <SID>DirDiffHexmode()
+    wincmd k
+    call <SID>ToggleHex()
+    wincmd l
+    call <SID>ToggleHex()
+    " Go back to the diff window
+    wincmd j
+endfunction
+
+function! <SID>DirDiffWrapmode()
+    wincmd k
+    setlocal wrap!
+    wincmd l
+    setlocal wrap!
+    " Go back to the diff window
+    wincmd j
 endfunction
 
 function! <SID>EscapeFileName(path)
@@ -589,6 +648,8 @@ function! <SID>DirDiffOpen()
         exe (b:currentDiff)
         " Center the line
         exe ("normal z.")
+        " Set wrap mode by default
+        call <SID>DirDiffWrapmode()
     else
         echo "There is no diff at the current line!"
     endif
@@ -781,6 +842,7 @@ function! <SID>DirDiffSync() range
         endif
     endwhile
     echo syncCount . " diff item(s) synchronized."
+    exe "redraw!"
 endfunction
 
 " Return file "A" or "B" depending on the line given.  If it's a Only line,
